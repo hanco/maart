@@ -15,16 +15,13 @@ class Cell:
         y = self.y - 1
         return self.make_list(y)
 
-    def update(self, grid):
-        self.extra = 0
-        for y, x in self.followed():
-            self.extra += grid[y][x].total() - 128
-        if self.total() < 128 and self.selected:
+    def update(self):
+        if self.total() < 0 and self.selected:
             self.selected = False
         return
 
     def remove_selected(self, grid):
-        if self.total() < 128:
+        if self.total() < 0:
             self.selected = False
         return
 
