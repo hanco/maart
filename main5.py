@@ -4,7 +4,7 @@ with open('small.txt') as f:
     grid_data = [i.split() for i in f.readlines()]
 
 print(grid_data)
-selected = []
+selected = [[y, x] for y in range(len(grid_data)) for x in range(len(grid_data))]
 checked = []
 TheList = []
 
@@ -32,35 +32,38 @@ def make_object(grid):
             object[y][x] = Cell(y, x, grid[y][x]-128, len(grid))
     return
 
-def select(selected, cell, value):
-    checked.append([cell.y,cell.x])
-    list1 = list(selected)
-    list1.remove([cell.y,cell.x])
-    lists = [list1, selected]
-    for x in range(2):
-        lists[x] = add_followers(cell, lists[x])
-    values = choice(lists)
-    if values[0] > values[1]:
-        max_list = list1
-        value += values[0]
-    else:
-        max_list = lists[1]
-        value += values[1]
-    for cell in max_list:
-        if cell in checked:
-            continue
+def select(selected):
+    l = list(selected)
+    if l:
+        y, x= l[0]
+        if not object[y][x].followers():
+            if object[y][x].value < 0:
+                l.remove([y, x])
         else:
-            select(max_list, object[cell[0]][cell[1]], value)
-    return TheList
+            l.remove([y, x])
+            unselect = remove_followers([y, x], l)
+            select = choice([unselect, selected])
+
+    return select
 
 
 def choice(lists):
     values = [0, 0]
     for x in range(2):
-        values[x] = 0
         for cell in lists[x]:
             values[x] += object[cell[0]][cell[1]].value
-    return values
+    if values[0] > values[1]:
+        return lists[0]
+    return lists[1]
+
+def remove_followers(cell, selected):
+    unselect = list(selected)
+    followers = object[cell[0]][cell[1]].followers()
+    for y, x in followers:
+        if [y, x] in unselect:
+            unselect.remove([y, x])
+            unselect = remove_followers([y, x], unselect)
+    return unselect
 
 def add_followers(cell , selected):
     line = cell.y
@@ -87,8 +90,7 @@ def add_followers(cell , selected):
 grid = grid_convert(grid_data)
 print_grid(grid)
 make_object(grid)
-selected = [[0, x] for x in range(len(grid))]
-selection = select(selected, object[0][0], 0)
+selection = select(selected)
 print(selection)
 print(TheList)
 print(len(TheList))
