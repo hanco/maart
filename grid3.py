@@ -3,30 +3,25 @@ class Cell:
         self.y = y
         self.x = x
         self.value = value
-        self.extra = 0
         self.n = n
+        self.extra = [0, 0, 0]
+        self.child = 0
         self.selected = True
 
-    def followers(self):
+    def children(self):
         y = self.y + 1
         return self.make_list(y)
 
-    def followed(self):
+    def parents(self):
         y = self.y - 1
         return self.make_list(y)
 
-    def update(self):
-        if self.total() < 0 and self.selected:
-            self.selected = False
-        return
-
-    def remove_selected(self, grid):
-        if self.total() < 0:
-            self.selected = False
-        return
-
     def total(self):
-        total = self.value + self.extra
+        total = sum(self.extra, self.value)
+        return total
+
+    def totalandchild(self):
+        total = self.child + self.value
         return total
 
     def make_list(self, y):

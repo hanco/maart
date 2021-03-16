@@ -1,0 +1,14 @@
+start met onderste rij.
+van rechts naar links.......remove zer0s
+selecteer cellen van links naar rechts
+selecteer parents van links naar rechts.
+indien waarde parent negatief...aanvullen tot nul....zolang waarde child het toelaat.
+daarna stap 2
+1 na onderste rij....remove zer0s.
+in dezelfde rij.....var(child) vullen.
+stap 5 : waarde child = value + grandchildren....dit met gebeuren op regel 33.
+
+
+
+
+

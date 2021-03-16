@@ -1,12 +1,12 @@
 from grid3 import Cell
+from more_itertools import powerset
+from copy import deepcopy
 
-with open('small.txt') as f:
+with open('grid.txt') as f:
     grid_data = [i.split() for i in f.readlines()]
 
 print(grid_data)
-selected = [[y, x] for y in range(len(grid_data)) for x in range(len(grid_data))]
-checked = []
-TheList = []
+unselected = []
 
 def print_grid(x):
     for i in range(len(x)):
@@ -16,7 +16,6 @@ def print_grid(x):
             regel += (" "*6 + (str(y)))[-6:]
         print(regel)
 
-
 def grid_convert(g):
     grid = [[0 for x in range(len(g))] for y in range(len(g))]
     for x in range(len(g)):
@@ -25,76 +24,93 @@ def grid_convert(g):
     return grid
 
 def make_object(grid):
-    global object
-    object = [[0 for x in range(len(grid))] for y in range(len(grid))]
+    global objects
+    objects = [[0 for x in range(len(grid))] for y in range(len(grid))]
     for y in range(len(grid)):
         for x in range(len(grid)):
-            object[y][x] = Cell(y, x, grid[y][x]-128, len(grid))
+            objects[y][x] = Cell(y, x, grid[y][x]-128, len(grid))
     return
 
-def select(selected):
-    l = list(selected)
-    if l:
-        y, x= l[0]
-        if not object[y][x].followers():
-            if object[y][x].value < 0:
-                l.remove([y, x])
-        else:
-            l.remove([y, x])
-            unselect = remove_followers([y, x], l)
-            select = choice([unselect, selected])
+def start():
+    global objects, unselected
+    for line in reversed(objects):
+        choicelist = []
+        for x in line:
+            if x.total() < 0:
+                unselected.append([x.y, x.x])
+                x.selected = False
+            else:
+                choicelist.append([x.y, x.x])
+        choicelist= list(powerset(choicelist))
+        unselected = choice(choicelist, line[0].y)
+        for row, col in unselected:
+            object = objects[row][col]
+            if object.selected:
+                object.selected = False
+        for line in  reversed(objects):
+            for obj in line:
+                extra = 0
+                followers = obj.followers()
+                for row, col in followers:
+                    follower = objects[row][col]
+                    if follower.selected:
+                        extra += follower.total()
+                obj.extra = extra
 
-    return select
+    return
 
+def choice(choicelist, y):
+    maxscore = [0, []]
+    for row in choicelist:
+        lines = deepcopy(objects[-(y*len(objects)):])
+        if row:
+            for col in row:
+                if col:
+                    lines[col[0]][col[1]].selected = False
+        for row in range(len(lines)):
+            for obj in lines[row]:
+                if not obj.selected:
+                    followers = obj.followers()
+                    for y, x in followers:
+                        if lines[y][x].selected:
+                            lines[y][x].selected = False
+        score = values(lines)
+        if score > maxscore[0]:
 
-def choice(lists):
-    values = [0, 0]
-    for x in range(2):
-        for cell in lists[x]:
-            values[x] += object[cell[0]][cell[1]].value
-    if values[0] > values[1]:
-        return lists[0]
-    return lists[1]
+            maxscore[0] = score
+            maxscore[1] = unselect(lines)
+    print(maxscore[0])
+    return maxscore[1]
 
-def remove_followers(cell, selected):
-    unselect = list(selected)
-    followers = object[cell[0]][cell[1]].followers()
-    for y, x in followers:
-        if [y, x] in unselect:
-            unselect.remove([y, x])
-            unselect = remove_followers([y, x], unselect)
-    return unselect
+def values(lines):
+    score = 0
+    for row in lines:
+        for col in row:
+            if col.selected:
+                score += col.value
 
-def add_followers(cell , selected):
-    line = cell.y
-    for y, x in selected:
-        if y == line:
-            followers = object[y][x].followers()
-            for Y, X in followers:
-                remove = []
-                followed = object[Y][X].followed()
-                for c in followed:
-                    if c in selected:
-                        continue
-                    else:
-                        remove.append([Y, X])
-                for c in remove:
-                    if c in followers:
-                        followers.remove(c)
-            for cell in followers:
-                if not cell in selected:
-                    selected.append(cell)
-    return selected
+    return score
+
+def unselect(lines):
+    u = []
+    for row in lines:
+        for col in row:
+            if not col.selected:
+                u.append([col.y, col.x])
+
+    return u
 
 
 grid = grid_convert(grid_data)
 print_grid(grid)
 make_object(grid)
-selection = select(selected)
-print(selection)
-print(TheList)
-print(len(TheList))
-total = 0
-for y, x in TheList:
-    total += object[y][x].value
-print(total)
+start()
+print(unselected)
+for row in objects:
+    for col in row:
+        if [col.y, col.x] not in unselected:
+            col.selected = True
+        else:
+            col.selected = False
+print(values(objects))
+
