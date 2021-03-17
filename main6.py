@@ -1,6 +1,6 @@
 from grid3 import Cell
 
-with open('small.txt') as f:
+with open('grid.txt') as f:
     grid_data = [i.split() for i in f.readlines()]
 
 print(grid_data)
@@ -10,7 +10,7 @@ def print_grid(x):
         line = x[i]
         regel =""
         for y in line:
-            regel += (" "*6 + (str(y)))[-6:]
+            regel += (" "*6 + (str(y-128)))[-6:]
         print(regel)
 
 def grid_convert(g):
@@ -30,15 +30,44 @@ def make_object(grid):
 
 def start():
     for row in reversed(objects):
-        update_child(row[0].y)
+        children_value = [0, 0, 0]
+        deducted = 0
+        # from children_value[1]
         for col in reversed(row):
+            children_value = value_of_children(col.y , col.x , children_value, deducted) # remove first_value
             total = col.total()
             if total < 0:
-                col.selected = False
-                remove_children(col)
+                children_value = 0
+                for y, x in col.children():
+                    children_value += objects[y][x].child
+                if total + children_value < 0:
+                    col.selected = False
+                    remove_children(col)
         update_extra(row)
 
     return
+
+def value_of_children(y, x, children_value, deducted):
+    if y < n-1:
+        if x > 0:
+            child = objects[y-1][x-1]
+            children_value[0] = child.value + child.child[2]
+        child = objects[y - 1][x]
+        children_value[1] = child.value + sum(child.child)
+        if x < len(grid_data)-1:
+            child = objects[y - 1][x + 1]
+            children_value[2] = child.value + child.child[2]
+        for value in children_value:
+            if value >= deducted:
+                value -= deducted
+                deducted = 0
+            else:
+                deducted -= value
+                value = 0
+    return children_value
+
+
+    # must include old_value
 
 def remove_children(object):
     global objects
@@ -54,7 +83,7 @@ def remove_children(object):
                     for x in range(3):
                         if parent_object.x == child_object.x -(x-1):
                             parent_object.extra[x] = 0
-                            parent_object.child[x] = 0
+                            parent_object.child = 0
             remove_children(child_object)
 
     return
@@ -70,6 +99,7 @@ def update_extra(row):
                 total = parent_object.total()
                 for x in range(3):
                     if parent_object.x == col.x -(x-1):
+                        parent_object.child[x] = value
                         if total < 0:
                             if total + value >=0:
                                 parent_object.extra[x] = -total
@@ -84,12 +114,12 @@ def update_child(y):
     global objects
     row = y + 2
     if row < len(grid_data):
-        grandchildren = objects[row]:
+        grandchildren = objects[row]
         for grandchild in grandchildren:
             if grandchild.selected:
                 value = grandchild.totalandchild()
-                x = grandchild.x:
-                objects[row - 1][x] = value
+                x = grandchild.x
+                objects[row - 1][x].child = value
 
     return
 
@@ -111,25 +141,10 @@ def unselect(lines):
 
     return u
 
-def check_children():
-    selected = []
-    for row in reversed(objects):
-        for col in row:
-            if col.selected:
-                selected.append([col.y, col.x])
-                for parent in col.parents():
-                    if objects[parent[0]][parent[1]].selected:
-                        continue
-                    else:
-                        return [col.y , col.x]
-    return selected
-
-
-
 grid = grid_convert(grid_data)
 print_grid(grid)
 make_object(grid)
 start()
-print(check_children())
+print(unselect(objects))
 print(values(objects))
 

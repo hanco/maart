@@ -5,7 +5,7 @@ class Cell:
         self.value = value
         self.n = n
         self.extra = [0, 0, 0]
-        self.child = 0
+        self.child = [0, 0, 0]
         self.selected = True
 
     def children(self):
