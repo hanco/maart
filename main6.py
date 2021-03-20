@@ -37,18 +37,15 @@ def start():
             children_value = value_of_children(col.y , col.x , children_value, deducted) # remove first_value
             total = col.total()
             if total < 0:
-                children_value = 0
-                for y, x in col.children():
-                    children_value += objects[y][x].child
-                if total + children_value < 0:
+                if total + sum(children_value) < 0:
                     col.selected = False
                     remove_children(col)
-        update_extra(row)
+        #update_extra(row)
 
     return
 
 def value_of_children(y, x, children_value, deducted):
-    if y < n-1:
+    if y < len(grid_data)-1:
         if x > 0:
             child = objects[y-1][x-1]
             children_value[0] = child.value + child.child[2]
