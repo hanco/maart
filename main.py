@@ -80,6 +80,14 @@ def select(g):
 
     return selected, total , unselected
 
+def possible(cell):
+    for y, x in cell.followed():
+        if not object[y][x].selected:
+            return False
+        else:
+            continue
+    return True
+
 
 grid = grid_convert(grid_data)
 print_grid(grid)

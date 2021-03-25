@@ -63,12 +63,13 @@ def try_remove():
             object = objects[y][x]
             if object.value < 0:
                 remove_list = all_selected_children(y, x)
+                pos = [y,x]
                 if listvalue(remove_list) > 0:
                     continue
                 else:
                     for Y, X in remove_list:
                         objects[Y][X].selected = False
-    print(values(objects))
+                    print(values(objects) , y , x)
 
     return
 
@@ -86,7 +87,7 @@ def children_selected(object):
     return False
 
 def all_selected_children(y, x):
-    allchildren = [[y, x]]
+    allchildren = []
     for row in range(y, n):
         a = x-(row-y)
         if a < 0:
@@ -118,6 +119,14 @@ def unselect(lines):
 
     return u
 
+def possible(cell):
+    for y, x in cell.followed():
+        if not object[y][x].selected:
+            return False
+        else:
+            continue
+    return True
+
 if __name__ == '__main__':
     grid = grid_convert(grid_data)
     print_grid(grid)
@@ -127,5 +136,7 @@ if __name__ == '__main__':
     try_remove()
     print(values(objects))
     try_remove()
+    try_remove()
+
     print_objects(objects)
     print(objects[2][10].selected)
